@@ -1,1 +1,15 @@
-# web-information-processing-and-application
+# 课程相关
+
+## 课程主页
+
+- [点此链接](http://staff.ustc.edu.cn/~tongxu/webinfo/)
+
+## 课程安排
+
+- [x] 课程形式：讲课 + 实验
+- [x] 理论学时 60 学时 + 实验学时 30 学时(无单独实验课安排)
+- [x] 成绩组成：50% 考试成绩 + 40% 实验成绩 + 10% 作业成绩(部分章节)
+
+# 第一节 绪论
+
+
