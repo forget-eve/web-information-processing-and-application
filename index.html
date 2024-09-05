@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" href="./_media/笔记.png" type="image/x-icon">
+    <link rel="stylesheet" href="/font/Pacifico-Regular.ttf">
+    <meta name="description" content="Web信息处理与分析">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/npm/docsify@4/themes/vue.css"
+    />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid@10/" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.27"></script>
+    <!-- MathJax 配置 -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ], // 行内公式标记
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ], // 多行公式标记
+          processEscapes: true, // 允许使用反斜杠转义
+        }
+      });
+    </script>
+    <!-- 添加 MathJax 的引用 -->
+    <script type="text/javascript" async
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <style>
+      body {
+        font-family: 'Pacifico-Regular', cursive; /* 使用引入的字体 */
+        margin: 0; /* 清除默认的 body margin */
+      }
+      .markdown-section table {
+          border-collapse: collapse;
+          border-spacing: 0;
+          margin-bottom: 1rem;
+          display: contents;
+          overflow: auto;
+          width: 100%;
+      }
+      .markdown-section h6{
+          font-size:10px;
+          font-weight:bold;
+          color:#244b8a;
+      }
+    </style>
+    <title>Web信息处理与分析</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      window.$docsify = { 
+        name:'Web信息处理与分析',
+        repo:'https://github.com/forget-eve/web-information-processing-and-application',
+        homepage:'README.md',
+        themeColor: '	#5F9EA0',
+        // coverpage: true,
+        // onlyCover: false,
+        // loadNavbar:true,
+        count:{
+          countable:true,
+          fontsize:'0.9em',
+          color:'pink',
+          language:'chinese'
+        },
+         chat: {
+          // 聊天标题
+          title: '小tips',
+          // 设置头像
+          users: [
+            {nickname: 'Tips', avatar: './img/Tips.jpg' },
+          ],
+          // 在右侧显示消息（自己发出的）
+          myself: 'Tips',
+          // 动画延时 （毫秒）
+          animation: 50,
+          // 面板导航栏风格，支持 "mac" 与 "windows"
+          os: 'mac',
+        },
+        tabs: {
+          persist: true, // default
+          sync: false, // default
+          theme: 'material', // default
+          tabComments: true, // default
+          tabHeadings: true // default
+        },
+        busuanzi: true,
+        search: {
+          maxAge:86400000,
+          paths:[],
+          placeholder:'请输入搜索关键字',
+          noData:'未搜索到相关结果，别搜了！',
+          hideOtherSidebarContent: true,
+          depth:1,
+        },
+        markdown: {
+          renderer: {
+            code: function(code, lang) {
+              var html = '';// 搜索 mermaid 代码
+              if(code.match(/^sequenceDiagram/) || code.match(/^graph/) || code.match(/^gantt/)){
+              // 生成一个 mermaid 图表的容器
+                html = '<div class="mermaid">' + code + '</div>';
+              }else {
+                // 如果不是 mermaid 代码，则正常渲染
+                var hl = Prism.highlight(code, Prism.languages[lang] || Prism.languages.markup)
+                html = '<pre v-pre data-lang="' + lang + '"><code class="lang-' + lang + '">' + hl + '</code></pre>';
+              }
+              return html;
+            }
+          }
+        },
+        plugins: [
+          function (hook, vm) {
+            hook.ready(function () {
+            // 类似 jQuery.ready 初始化 mermaid, 禁用自动渲染
+              mermaid.initialize({ startOnLoad: false });
+            });
+            hook.doneEach(function () {
+            // 每个页面渲染完成后手动渲染 mermaid 图表
+              mermaid.init(undefined, '.mermaid');
+            });
+          }
+        ]
+      };
+      window.MathJax = {
+        loader: {load: ['[tex]/color']},
+        tex: {packages: {'[+]': ['color']}}
+      };
+    </script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+    <!-- Docsify v4 -->
+    <script src="https://unpkg.com/docsify-busuanzi@1.0.1/dist/docsify-busuanzi.min.js"></script>
+    <!-- Docsify Chat -->
+    <script src="//cdn.jsdelivr.net/npm/docsify-chat/lib/docsify-chat.min.js"></script>
+    <script src="//unpkg.com/docsify-count/dist/countable.js"></script>
+    <!-- docsify-tabs (latest v1.x.x) -->
+    <script src="https://cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+    <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+  </body>
+</html>
