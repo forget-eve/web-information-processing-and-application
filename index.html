@@ -12,6 +12,7 @@
       href="//cdn.jsdelivr.net/npm/docsify@4/themes/vue.css"
     />
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid@10/" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css">
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.27"></script>
     <!-- MathJax 配置 -->
     <script type="text/x-mathjax-config">
@@ -20,6 +21,7 @@
           inlineMath: [ ['$','$'], ["\\(","\\)"] ], // 行内公式标记
           displayMath: [ ['$$','$$'], ["\\[","\\]"] ], // 多行公式标记
           processEscapes: true, // 允许使用反斜杠转义
+          processEnvironments: true,
         }
       });
     </script>
@@ -27,6 +29,8 @@
     <script type="text/javascript" async
       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/h-hg/docsify-pseudocode/dist/docsify-pseudocode.min.js"></script>
     <style>
       body {
         font-family: 'Pacifico-Regular', cursive; /* 使用引入的字体 */
