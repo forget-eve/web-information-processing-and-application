@@ -124,6 +124,15 @@
             // 每个页面渲染完成后手动渲染 mermaid 图表
               mermaid.init(undefined, '.mermaid');
             });
+            /*termynal.js*/
+            hook.beforeEach(function(content){
+                return beforeEach(content);
+            })
+            hook.doneEach(function (){
+                setupTermynal();
+                showRandomAnnouncement('announce-left', 5000)
+                showRandomAnnouncement('announce-right', 10000)
+            });
           }
         ]
       };
