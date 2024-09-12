@@ -906,28 +906,23 @@ C[技术让位于利益]
 ### **最最基础的算法**
 
 ```algorithm
-% This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
 \begin{algorithm}
-\caption{Quicksort}
+\caption{SPIDER}
 \begin{algorithmic}
-\PROCEDURE{Quicksort}{$A, p, r$}
-    \IF{$p < r$} 
-        \STATE $q = $ \CALL{Partition}{$A, p, r$}
-        \STATE \CALL{Quicksort}{$A, p, q - 1$}
-        \STATE \CALL{Quicksort}{$A, q + 1, r$}
-    \ENDIF
-\ENDPROCEDURE
-\PROCEDURE{Partition}{$A, p, r$}
-    \STATE $x = A[r]$
-    \STATE $i = p - 1$
-    \FOR{$j = p$ \TO $r - 1$}
-        \IF{$A[j] < x$}
-            \STATE $i = i + 1$
-            \STATE exchange
-            $A[i]$ with $A[j]$
-        \ENDIF
-        \STATE exchange $A[i]$ with $A[r]$
+\PROCEDURE{SPIDER}{$G$}
+  \STATE Let root $:=$ any URL from $G$
+  \STATE Initialize Stack <stack data structure>
+  \STATE Let Stack $:=$ Push(root, Stack)
+  \STATE Initialize Collection <big file of URL-page pairs>
+  \WHILE{Stack is not empty}
+    \STATE current\_URL $:=$ Pop(Stack)
+    \STATE page $:=$ look-up(current\_URL)
+    \STATE Store(<current\_URL, page>, Collection)
+    \FOR{every URL\_i in page}
+      \STATE Push(URL\_i, Stack)
     \ENDFOR
+  \ENDWHILE
+  \STATE Return Collection
 \ENDPROCEDURE
 \end{algorithmic}
 \end{algorithm}
@@ -940,7 +935,33 @@ C[技术让位于利益]
 
 ### **最最基础的改进算法**
 
-
+```algorithm
+\begin{algorithm}
+\caption{SPIDER}
+\begin{algorithmic}
+\PROCEDURE{SPIDER}{$G$, \{SEEDS\}}
+  \STATE Initialize Collection <big file of URL-page pairs>
+  \STATE Initialize Visited <big hash-table>
+  \FOR{every root in \{SEEDS\}}
+    \STATE Initialize Stack <stack data structure>
+    \STATE Stack $:=$ Push(root, Stack)
+    \WHILE{Stack is not empty}
+      \REPEAT
+        \STATE current\_URL := Pop(Stack)
+      \UNTIL{current\_URL is not in Visited}
+      \STATE Insert\_hash(current\_URL, Visited)
+      \STATE page := look-up(current\_URL)
+      \STATE Store(<current\_URL, page>, Collection)
+      \FOR{every URL\_i in page}
+        \STATE Push(URL\_i, Stack)
+      \ENDFOR
+    \ENDWHILE
+  \ENDFOR
+  \STATE Return Collection
+\ENDPROCEDURE
+\end{algorithmic}
+\end{algorithm}
+```
 
 - [x] 解决方案：
   - 利用BigTable排除重复部分
@@ -973,6 +994,34 @@ C[技术让位于利益]
 
 > 本质是维持一个URL队列，先进先出
 
+```algorithm
+\begin{algorithm}
+\caption{SPIDER}
+\begin{algorithmic}
+\PROCEDURE{SPIDER}{$G$, \{SEEDS\}}
+  \STATE Initialize Collection <big file of URL-page pairs>/ // 存储URL-页面对的集合
+  \STATE Initialize Visited <big hash-table> // 存储已访问的URL
+  \FOR{every root in \{SEEDS\}}
+    \STATE Initialize Queue <queue data structure>// 待爬取的URL队列
+    \STATE Let Queue $:=$ EnQueue(root, Queue)
+    \WHILE{Queue is not empty}
+      \REPEAT
+        \STATE current\_URL $:=$ DeQueue(Queue)
+      \UNTIL{current\_URL is not in Visited}
+      \STATE Insert\_hash(current\_URL, Visited)
+      \STATE page $:=$ look-up(current\_URL)  // 爬取页面
+      \STATE Store(<current\_URL, page>, Collection)
+      \FOR{every URL\_i in page} 
+        \STATE EnQueue(URL\_i, Queue) // 链接提取
+      \ENDFOR
+    \ENDWHILE
+  \ENDFOR
+  \STATE Return Collection
+\ENDPROCEDURE
+\end{algorithmic}
+\end{algorithm}
+```
+
 ##### **深度优先算法**
 
 <p align="center">
@@ -981,8 +1030,33 @@ C[技术让位于利益]
 
 > 本质是维持一个URL栈，先进后出
 
-
-
+```algorithm
+\begin{algorithm}
+\caption{SPIDER}
+\begin{algorithmic}
+\PROCEDURE{SPIDER}{$G$, \{SEEDS\}}
+  \STATE Initialize Collection <big file of URL-page pairs>// 结果存储
+  \STATE Initialize Visited <big hash-table> // 已访问URL列表
+  \FOR{every root in \{SEEDS\}}
+    \STATE Initialize Stack <stack data structure> // 待爬取的URL栈
+    \STATE Let STACK $:=$ Push(root, Stack)
+    \WHILE{Stack is not empty}
+      \REPEAT
+        \STATE current\_URL $:=$ Pop(Stack)
+      \UNTIL{current\_URL is not in Visited}
+      \STATE Insert\_hash(current\_URL, Visited)
+      \STATE page $:=$ look-up(current\_URL) // 爬取页面
+      \STATE Store(<current\_URL, page>, Collection)
+      \FOR{every URL\_i in page} 
+        \STATE Push(URL\_i, Stack) // 链接提取
+      \ENDFOR
+    \ENDWHILE
+  \ENDFOR
+  \STATE Return Collection
+\ENDPROCEDURE
+\end{algorithmic}
+\end{algorithm}
+```
 
 ##### **广度 or 深度优先算法**
 
