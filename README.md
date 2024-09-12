@@ -569,10 +569,71 @@ C[技术让位于利益]
     - 说明文本内容的布局和字体、字号等信息
     - 嵌入图片、视频、创建超链接等
 
+- [x] HTML的示例框架
 
+```html
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+  <title> This is the title but often omitted </title>
+</head>
+<body>
+  <img src = “url1” alt=“text”>
+  other text
+  <a href = “url2” title=“anchor text”> this is link text </a>
+</body>
+</html>
+```
 
+- [x] HTML中具有特别意义的文字
+
+```html
+<head><title> text </text></head>
+```
+> 是搜索服务显示的内容之一（URL，标题，摘要等）
+
+```html
+<img src=“url” alt=“text”>
+```
+
+> 图片描述，可以帮助我们做“从文字到图片”的查询
+
+```html
+<a href=“url” title=“text”>link text</a>
+```
+
+> 有助于理解目标网页内容及网页之间在内容上的关系
+
+##### **HTTP**
+
+- [x] HTTP的基本概念
+  - 超文本传输协议(HyperText Transport Protocol)
+    - 工作在TCP 之上(请求/应答方式)
+    - 容许在一个TCP 连接上发多个HTTP请求
+  - 工作步骤(从客户端看)
+    - 通过域名服务器(DNS)得到服务器主机的IP地址
+    - 用TCP和服务器建立联系
+      - 发送HTTP请求(例如，GET或POST)
+      - 接收HTTP应答头
+      - 接收HTML网页内容
+
+- [x] HTTP的应用实例
+
+<p align="center">
+  <img src="./img/HTTP的应用实例.png" alt="HTTP的应用实例">
+</p>
+
+- [x] HTTP的状态代码分类
+
+<p align="center">
+  <img src="./img/HTTP的状态代码分类.png" alt="HTTP的状态代码分类">
+</p>
+
+> - 重点记住一些特殊的状态码，如：200(OK)，403(Forbidden)，404(Not Found)……
 
 <!-- tabs:end -->
+
+#### **DNS / URL**
 
 <!-- tabs:end -->
 
