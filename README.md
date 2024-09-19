@@ -1631,6 +1631,8 @@ $$\delta_2(s_i)=\max\limits_{1\leq j \leq 2}\lbrace \delta_1(s_j)a_{ji} \rbrace 
 
 $$\psi_2(s_i)=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace \delta_1(s_j)a_{ji} \rbrace , i= 1,2$$
 
+>  <span style="color:darkcyan;">1、2分别对应T、F</span>
+
 - 计算：
 
 $$\delta_2(T)=\max\limits_{1\leq j \leq 2}\lbrace \delta_1(s_j)a_{j1} \rbrace b_1(w_2)=\max\limits_{1\leq j \leq 2}\lbrace 0.3 × 0.7,0.04 × 0.4 \rbrace × 0.4=0.084$$
