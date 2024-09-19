@@ -1383,7 +1383,7 @@ $ python UA_new.py
   <img src="./img/最少切分分词.png" alt="最少切分分词">
 </p>
 
-###### **拓展方法： `N-最短路径法`** 
+###### **拓展方法： `N-最短路径法`**
 
 - [x] 保留N条最短的路径，以提供更多分词方案。
 
@@ -1413,7 +1413,7 @@ $ python UA_new.py
 
 ##### 统计分词的形式化表达
 
-- $c=c_1c_2\dots \c_n$ ， $c$ 是待分词的句子(字串)。而 $w = w_1w_2\dots w_m$ 是切分的结果。
+- $c=c_1c_2\dots c_n$ ， $c$ 是待分词的句子(字串)。而 $w = w_1w_2\dots w_m$ 是切分的结果。
 - 设 $P(w|c)$ 为 $c$ 切分为 $w$ 的某种估计概率。
 - $w_a,w_b,\dots ,w_k$ 为 $c$ 的所有可能的分词方案。
 - 那么，基于统计的分词模型就是找到目标词串 $w$ ，使得 $w$ 满足：
@@ -1613,7 +1613,7 @@ $$B=[b_{j}(k)]_{2×3}=\left(\begin{matrix}
 - (1) 初始化
   - 在 $t=1$ 时，对每一个状态 $s_i$ (记显式状态 $T$ 为 $s_1$ , $F$ 为 $s_2$ )，计算状态为 $s_i$ 观测 $w_1$ 为 $X$ 的概率，记此概率为 $\delta_1(s_i)$ ，则
 
-$$\delta_1(s_i)=\pi_ib_i(w_1) \\\ i=1,2$$
+$$\delta_1(s_i)=\pi_ib_i(w_1) \\\\\\ i=1,2$$
 
 > 代入实际数据
 
@@ -1623,15 +1623,50 @@ $$\delta_1(F)=0.4×0.1=0.04$$
 
 > <span style="color:red;">可见，第一个隐状态为T更为合理</span>
 
+- (2) 在 $t=2$ 时，对每一个状态 $s_i$ ，求在 $t=1$ 时状态为 $s_j$ 观测为 $X$ 并在 $t=2$ 时状态为 $s_i$ 观测 $w_2$ 为 $Y$ 的路径的最大概率，记此最大概率为 $\delta_2(s_i)$ ，则
 
+$$\delta_2(s_i)=\max\limits_{1\leq j \leq 2}\lbrace \delta_1(s_j)a_{ji} \rbrace b_i(w_i)$$
 
+- 同时，对每个状态 $s_i$ ，记录概率最大路径的前一个状态 $s_j$ 所对应的下标 $j$ ：
 
+$$\psi_2(s_i)=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace \delta_1(s_j)a_{ji} \rbrace , i= 1,2$$
 
+- 计算：
 
+$$\delta_2(T)=\max\limits_{1\leq j \leq 2}\lbrace \delta_1(s_j)a_{j1} \rbrace b_1(w_2)=\max\limits_{1\leq j \leq 2}\lbrace 0.3 × 0.7,0.04 × 0.4 \rbrace × 0.4=0.084$$
 
+$$\delta_2(F)=0.027$$
 
+$$\psi_2(T)=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace \delta_1(s_j)a_{ji} \rbrace=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace 0.3 × 0.7,0.04 × 0.4 \rbrace = 1$$
 
+$$\psi_2(F)=1$$
 
+> <span style="color:red;">显然，第二个隐状态为T的概率仍然高于F的概率</span>
+
+- 同理，在 $t=3$ 时，
+
+$$\delta_3(T)=\max\limits_{1\leq j \leq 2}\lbrace \delta_2(s_j)a_{j1} \rbrace b_1(w_3)=\max\limits_{1\leq j \leq 2}\lbrace 0.084 × 0.7,0.027 × 0.4 \rbrace × 0.1=0.00588$$
+
+$$\delta_2(F)=0.01512$$
+
+$$\psi_3(T)=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace \delta_2(s_j)a_{j1} \rbrace=\underset{\substack{1\leq j \leq 2}}{\arg\max}\lbrace 0.084 × 0.7,0.027 × 0.4 \rbrace = 1$$
+
+$$\psi_2(F)=1$$
+
+- (3) 以 $P*$ 表示最优路径的概率，则
+
+$$P*=\max\limits_{1 \leq i \leq 2}\delta_3(s_i)=0.01512$$
+
+- 最优路径的终点下标 $i_3\*$ 是 $i_3^\*=\underset{\substack{i}}{\arg\max}\lbrace \delta_3(s_i) \rbrace=2$
+
+> <span style="color:red;">此时，第三个隐状态为F的概率更高</span>
+
+- (4) 由最终路径的终点下标 $i_3\*$ ，逆向找到 $i_1\*,i_2\*$ ：
+
+- 在 $t=2$ 时， $i_2\*=\psi_3(s_{i_3\*})=\psi_3(F)=1$
+- 在 $t=1$ 时， $i_2\*=\psi_2(s_{i_2\*})=\psi_2(T)=1$
+- 于是求得 $(i_1\*,i_2\*,i_3\*)=(1,1,2)$
+- 最优状态序列 $$
 
 <!-- tabs:end -->
 
@@ -1678,10 +1713,212 @@ $$\delta_1(F)=0.4×0.1=0.04$$
 
 <!-- tabs:end -->
 
+### 常用分词工具
 
-### 常用分词工具 
-## 停用词处理 
+#### 常用的中文分词工具
+
+- `NLPIR-ICTCLAS` ： https://github.com/NLPIR-team/NLPIR
+  - 中科院/北理工研发，基于HMM技术，界面友好，效果尚可
+- `结巴分词` ：https://github.com/yanyiwu/cppjieba/
+  - 基于HMM技术，有专门的Python库支持：https://github.com/fxsjy/jieba
+  - 语言支持最丰富(Java、C++、R等)，支持多种分词模式，支持自定义词典
+- `HanLP` ：https://github.com/hankcs/HanLP
+  - 由大快搜索主导并完全开源，语料时新、可自定义
+- `THULAC` ：https://github.com/thunlp/THULAC
+  - 集成了当时规模最大的人工分词和词性标注中文语料库，效果好，速度快
+- `PKUSeg` ：https://github.com/lancopku/PKUSeg-python
+  - 北大研发，分词准确率大幅提升。
+  - 支持多领域分词，支持用全新的标注数据来训练模型。
+
+#### 常用的英文分词工具
+
+- `Stanford NLP` ：https://nlp.stanford.edu/software/index.shtml
+- 支持多种语言的完整文本分析管道
+  - 包括分词、词性标注、词形归并和依存关系解析等任务
+- 提供了与 CoreNLP 的 Python 接口。
+  - CoreNLP： https://stanfordnlp.github.io/CoreNLP/
+- Stanford Word Segmenter
+  - https://nlp.stanford.edu/software/segmenter.html
+
+#### 分词工具包测试
+
+- [x] 公众号：AINLP
+  - 支持包括Jieba、PKUSeg、THULAC等在内的10种分词工具的测试
+  - 还支持词性标注，命名实体识别、情感分析，相似词查询，诗句生成等
+
+#### 分词可能带来的隐患
+
+- [x] 分词带来的大量低频词，导致严重的数据稀疏。
+- [x] 越来越多的OOV(Out of Vocabulary)词。
+- [x] 分词中难免的错漏将导致额外的噪声。
+- [x] 深度学习发展，分词的收益愈发有限。
+- [x] 大模型时代，语义理解工具远胜以往。
+
+## 停用词处理
+
+### 停用词的概念与意义
+
+- [x] 停用词，Stopwords，指文档中频繁出现或对实际语义影响不大的词语。
+  - 例如，英文中的The、of，中文中的“的”、“是”等。
+  - 数字、副词等与语义关系不大的词常作为停用词被处理。
+- [x] 为什么要去除停用词？
+  - 重复率很高，会造成索引中的倒排表很长，影响查询性能。
+  - 对最后结果的排序没什么贡献，反而可能产生干扰。
+
+### 停用词的概念与意义
+
+- [x] 停用词的设置与语料库的性质有关
+  - 除通用停用词表外，特定学科或领域也具有其专用的停用词。
+  - 例如，URL中的www，Wikipedia中的wiki
+- [x] 常用的停用词识别方法
+  - 较为成熟的停用词识别方法有: 文本频率、词频统计、熵计算等。
+  - 更为复杂的算法将结合统计与句法或内容分析。
+- [x] 常用的停用词表：哈工大停用词表、百度停用词表、 NLTK停用词表等。
+
+### 去除停用词可能导致的隐患
+
+- [x] 有些停用词在特定场景下是有意义的
+  - 例如，“非”、“不”表示否定；“较”、“稍微”表示程度等。
+- [x] 有些停用词的组合是有意义的
+  - 例如，“的确”、“To be or not to be”。
+  - 依赖于分词的效果。
+
+### 未来停用词的使用趋势
+
+- [x] 现代搜索引擎的趋势是逐渐减少对停用词的使用。
+- [x] 现代搜索引擎更关注利用语言的统计特性来处理常见词问题。
+  - 采用压缩技术，降低停用词表的存储开支。
+  - 引入词项权重，将高频词的影响降至最低。
+  - 索引去除技术，低于权重的词项将被排除。
+
 ## 规范化处理
+
+### 文本规范化的意义
+
+- [x]  文本处理的主要目标在于优化查询词与索引词之间的匹配。
+- [x] 然而，两方的文本内容都可能出现各种各样的干扰情况：
+  - 大小写、缩写、标点等的干扰，e.g., USA与U.S.A
+  - 不同时态等导致的词形不同，e.g., have / has
+  - 同义词 / 相关词等的干扰，e.g., 中科大与中国科大
+  - 用户个性化表述方式，如方言
+- [x] 规范化的目的就在于尽量保证索引词项符合用户查询输入。
+
+### 归一化处理
+
+- [x] 归一化/词根化，指还原词语的特殊形式的过程。
+- [x] 例如：
+  - $Ran, running \rightarrow run$
+  - $Universities \rightarrow university$
+- [x] 往往针对英语等语言，汉语并不需要这一步。
+- [x] 词根化处理可以有效降低词项的数量并减少歧义。
+
+#### 词干提取
+
+- [x] Stemming，指去除单词前后缀，获得词根的过程。
+- [x] 常见的前后词缀有“复数形式”、“过去分词”、“进行时”等。
+
+<p align="center">
+  <img src="./img/词干提取.png" alt="词干提取">
+</p>
+
+#### 词形还原
+
+- [x] Lemmatisation，指基于词典，将单词的复杂形态转变成最基础的形态。
+- [x] 并不是简单地将前后缀去掉，而是会根据词典将单词进行转换。
+
+<p align="center">
+  <img src="./img/词形还原.png" alt="词形还原">
+</p>
+
+#### 词干提取与词形还原的异同
+
+- [x] 词干提取与词形还原的相同点
+  - 目标一致。两者的目标均为将词的不同形态简化或归并为基础形式。
+  - 结果交叠。两者不是互斥关系，其结果有部分交叉。
+  - 方法类似。目前两者主流方法均是利用语言中的规则或词典实现。
+- [x] 词干提取与词形还原的不同点
+  - 在原理上，词干提取采用“缩减” ，而词形还原采用“转变” 。
+  - 在复杂性上，词形还原需考虑词缀转化、词性识别等，更为复杂。
+  - 在实现上，词干提取主要利用规则变化，而词形还原更依赖于词典。
+  - 在结果上，词干提取不一定得到完整单词，而词形还原是完整单词。
+
+#### 基本词干提取方法：Porter Stemming
+
+- [x] 英文中最常用的词干提取方法。
+- [x] 使用一系列后缀变换规则对单词进行变换。
+- [x] 其开源版本可通过网络获得。
+  - 例如：http://tartarus.org/~martin/PorterStemmer/
+  - 升级版本： http://snowball.tartarus.org/algorithms/english/stemmer.html
+  - 也可以通过以下网站进行在线简单测试：
+  - https://textanalysisonline.com/nltk-porter-stemmer
+
+##### Porter Stemming的基本流程
+
+1. 去除单词的复数形式
+2. 去除 `-ed(ly)` 或 `-ing(ly)` 等后缀
+3. 将 `–y` 改为 `–i`
+4. 处理双重后缀，如 `–ization` 等
+5. 处理 `–full` ， `–ness` 等后缀
+6. 处理 `–ant` ， `–ence` 等后缀
+7. 去除掉最后的 `–e` 和 `–ll`
+
+<p align="center">
+  <img src="./img/词形还原1.png" alt="词形还原">
+</p>
+
+### 错误拼写检查/拼写错误处理
+
+- [x] 用户在输入查询条件时，往往容易出现拼写错误(>10%)。
+- [x] 通常采用基于词典或编辑距离的方式进行检查和校对。
+- [x] 编辑距离(Levenshtein Distance)
+  - 指两个字符串之间转换所最少需要的编辑操作步数。
+  - 允许的一步编辑操作包括替换、插入或删除一个字符。
+    - 例如：Distance(“Kitten”, “Sitting”) = 3
+      > - kitten → sitten (substitution of "s" for "k")
+      > - sitten → sittin (substitution of "i" for "e")
+      > - sittin → sitting (insertion of "g" at the end).
+
+<p align="center">
+  <img src="./img/拼写错误处理.png" alt="拼写错误处理">
+</p>
+
+- [x] 不必要的拼写错误处理将影响用户体验。
+- [x] 在判断用户真实意图的基础之上，准确理解用户输入的查询条件。
+- [x] 采用更为友好的方式处理可能的“拼写错误”。
+
+### 同义词/相关词处理
+
+- [x] 比词根化和拼写错误更难处理，通常借助人工维护的知识库。
+- [x] 常见的词与词之间的关系：
+  - 同义词，e.g., college ≈ university
+  - Is – a关系，e.g., Boeing 737 max is a plane.
+  - Is – part – of关系，e.g., Nokia is part of Microsoft
+  - 反义词，e.g., Young v.s. Old
+- [x] 基于人工维护的知识库，获取各种词项之间的关系。
+- [x] 例如，WordNet：https://wordnet.princeton.edu/
+  - 大型的英文词汇数据库，将不同词性的单词归类至不同的认知同义词集合中。
+  - 目前，已有超过117000个认知同义词集合。
+
+<p align="center">
+  <img src="./img/相关词处理.png" alt="相关词处理">
+</p>
+
+- [x] 相关应用：基于同义词 / 相关词，拓展查询条件。
+
+<p align="center">
+  <img src="./img/相关词处理1.png" alt="相关词处理">
+</p>
+
+- [x] 中文的同义词 / 相关词处理及相关词典：
+  - HowNet(知网)：http://www.keenage.com/html/c_index.html
+    - 包含6万个汉字、1.1万个词语、句法结构式58个……
+  - Chinese WordNet(繁体)：http://lope.linguistics.ntu.edu.tw/cwn2/
+  - 大词林：http://www.bigcilin.com/browser/
+- [x] 在实际工作中，可以根据需要选择中文语义词库。
+
+
+
+
 
 
 
