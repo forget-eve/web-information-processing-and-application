@@ -1918,9 +1918,709 @@ $$P*=\max\limits_{1 \leq i \leq 2}\delta_3(s_i)=0.01512$$
   - 大词林：http://www.bigcilin.com/browser/
 - [x] 在实际工作中，可以根据需要选择中文语义词库。
 
+# 第四章 网页索引
 
+- [x] 文档处理的完整流程
 
+<p align="center">
+  <img src="./img/文档处理的完整流程.png" alt="文档处理的完整流程">
+</p>
 
+- [x] 文档处理的完整流程：案例
+  - Friends, Romans, Countrymen, lend me your ears
+    - 1)对文档进行分词处理，得到词项
+      - Friends / Romans / Countrymen / lend / me / your / ears
+    - 2)根据停用词表，删除停用词
+      - Friends / Romans / Countrymen / lend / ~~~me / your~~~ / ears
+    - 3)对词项进行规范化处理
+      - Friends → `Friend` Romans → `Roman` ears → `ear`
 
+- [x] 第三个问题：
+  - 预处理后的词项，如何有效支持查询任务？
 
+- [x] 网页索引的目的
+  - 索引的质量，关系着整个搜索引擎系统的精度与效率
 
+```mermaid
+graph LR
+A[关键词查询] --> B[索引与匹配] --> C[返回匹配文档]
+```
+
+## 布尔检索
+
+### 布尔检索的概念
+
+- [x] 在布尔检索中，文档被表示为<span style="color:blue;">关键词的集合</span>。
+- [x] 所有的查询式都被表示为关键词的<span style="color:darkgreen;">布尔组合</span>。
+  - 采用“与、或、非”关系加以连接
+- [x] 相关度计算
+  - 一个文档当且仅当它能够满足布尔查询式时，才会将其检索出来。
+  - 检索策略是<span style="color:red;">二值匹配</span>。
+
+<p align="center">
+  <img src="./img/布尔检索的概念.png" alt="布尔检索的概念">
+</p>
+
+### 布尔检索的优缺点
+
+<!-- tabs:start -->
+
+#### **<kbd style="color:orange;">优点</kbd>**
+
+- [x] 查询简单，易于理解
+- [x] 使用布尔表达式，可以方便地控制查询结果
+- [x] 可通过扩展来包含更多功能
+
+#### **<kbd style="color:blue;">缺点</kbd>**
+
+- [x] 功能较弱，不支持部分匹配
+- [x] 所有匹配文档均返回，不考虑权重和排序
+- [x] 很难进行自动的相关性反馈
+
+<!-- tabs:end -->
+
+### 布尔检索的应用场景
+
+- [x] 利用AND，OR或NOT等操作符，将词项连接起来
+  - 操作符可以连续使用，如“ `信息 AND (检索 OR 挖掘) AND 教材` ”
+
+#### 一个布尔检索的实例
+
+- [x] 《莎士比亚全集》中，哪些剧本包含Brutus和Caesar，但不包含Calpurnia？
+  - 采用如下布尔表达式：Brutus AND Caesar AND NOT Calpurnia
+- [x] 一个解决的笨办法：从头到尾扫描所有剧本
+  - 最大缺陷：速度超慢(尤其对于大型文档)
+  - 处理NOT操作并不容易，需要遍历全文
+  - 不支持检索结果的排序
+
+### 另一种选择：关联矩阵
+
+- [x] 通过采用非线性的扫描方式来解决，一种方法是事先给文档建立索引(Index)
+
+<p align="center">
+  <img src="./img/关联矩阵.png" alt="关联矩阵">
+</p>
+
+#### 关联矩阵的查询实例
+
+- [x] 关联矩阵的每一列都是0/1向量，每个0/1对应一个词项
+  - 1代表包含这个词，0代表不包含
+- [x] 将给定的查询条件Brutus AND Caesar AND NOT Calpurnia转化为行向量运算
+  - 取出三个行向量，对Calpurnia的行向量求补，最后按位进行与操作
+- [x] <strong style="color:blue;">110100</strong> <strong style="color:red;">AND</strong> <strong style="color:blue;">110111</strong> <strong style="color:red;">AND</strong> <strong style="color:blue;">101111</strong> <strong style="color:red;">=</strong> <strong style="color:blue;">100100</strong>
+
+##### 关联矩阵的查询实例：结果
+
+- [x] 剧本1：安东尼与克里奥佩特拉 (Antony and Cleopatra)，第三幕，第2场
+  - Agrippa [Aside to DOMITIUS ENOBARBUS]: Why, Enobarbus, When Antony found Julius <strong style="color:darkgreen;">Caesar</strong> dead, He cried almost to roaring; and he wept When at Philippi he found <strong style="color:red;">Brutus</strong> slain.
+- [x] 剧本2：哈姆雷特 (Hamlet)，第三幕，第2场
+  - Lord Polonius: I did enact Julius <strong style="color:darkgreen;">Caesar</strong> I was killed i' the Capitol; <strong style="color:red;">Brutus</strong> killed me.
+
+#### 关联矩阵的缺陷
+
+- [x] 如果文档集很大……？
+  - 假如有 $M$ 篇文档，词汇表大小为 $N$ ，那么矩阵规模为 $M x N$ .
+  - 在现实条件下， $M$ 和 $N$ 的数量级都将达到百万甚至上亿的水平。
+- [x] 更为重要的是，矩阵中 $\color{red}{1}$ 的数量会微乎其微。
+  - 高度稀疏的矩阵(可能小于1/500)
+  - <strong style="color:blue;">只记录1的位置更为合理！</strong>
+
+## 倒排索引
+
+### 倒排索引的概念与意义
+
+- [x] 信息检索中非常流行的、基于词项的基础文本索引
+- [x] 主要包括以下两部分结构：
+  - 词汇表(词典，Dictionary)：词项的集合
+  - 倒排表(Posting List)：文档ID列表，列举词项在哪些文档中出现
+
+<p align="center">
+  <img src="./img/倒排索引的概念与意义.png" alt="倒排索引的概念与意义">
+</p>
+
+- [x] 正排索引VS倒排索引
+
+<p align="center">
+  <img src="./img/倒排索引的概念与意义1.png" alt="倒排索引的概念与意义">
+</p>
+
+### 倒排索引的实例
+
+- [x] 三篇简单文档的倒排表与检索实例
+  - Yes, we got no bananas.
+  - Johnny Appleseed planted apple seeds.
+  - We like to eat, eat, eat apples and bananas.
+
+<p align="center">
+  <img src="./img/倒排索引的实例.png" alt="倒排索引的实例">
+</p>
+
+<!-- tabs:start -->
+
+#### **建立倒排表的流程**
+
+- [x] 三步走的基本算法
+
+<!-- tabs:start -->
+
+##### **第一步**
+
+- [x] 检索每篇文档，获得<词项，文档ID>对，并写入临时索引
+  - Yes, we got no bananas.
+  - Johnny Appleseed planted apple seeds.
+  - We like to eat, eat, eat apples and bananas.
+
+<p align="center">
+  <img src="./img/建立倒排表的流程1.png" alt="建立倒排表的流程">
+</p>
+
+##### **第二步**
+
+- [x] 对临时索引中的词项进行排序
+
+<p align="center">
+  <img src="./img/建立倒排表的流程2.png" alt="建立倒排表的流程">
+</p>
+
+##### **第三步**
+
+- [x] 遍历临时索引，对于相同词项的文档ID进行合并
+
+<p align="center">
+  <img src="./img/建立倒排表的流程3.png" alt="建立倒排表的流程">
+</p>
+
+<!-- tabs:end -->
+
+#### **基于倒排表的索引**
+
+- [x] 以莎翁的剧本检索为例，假如我们又要查询Brutus AND Caesar
+- [x] 不妨假设两个词项的倒排表遵循以下形式：
+  - Brutus：2，4，8，16，32，64，128……
+  - Caesar：1，2，3，5，8，13，21，34……
+
+<p align="center">
+  <img src="./img/基于倒排表的索引.png" alt="基于倒排表的索引">
+</p>
+
+- [x] 基于倒排表的查询，本质上是倒排记录表的“合并”过程
+- [x] 同时扫描两个倒排表，所需时间与倒排记录的数量呈线性关系
+  - 如果两个倒排表的长度分别为 $x$ 和 $y$ ，则合并共需 $O(x+y)$ 次操作
+
+<p align="center">
+  <img src="./img/基于倒排表的索引1.png" alt="基于倒排表的索引">
+</p>
+
+- [x] 倒排索引的索引算法
+
+```algorithm
+\begin{algorithm}
+\caption{INTERSECT}
+\begin{algorithmic}
+\PROCEDURE{INTERSECT}{$p_1, p_2$}
+  \STATE answer $\leftarrow$ <>
+  \WHILE{$p_1 \not = NIL and p_2 \not = NIL$}
+    \IF{$docID(p_1) = docID(p_2)$}
+      \STATE ADD(answer, $docID(p_1)$)
+      \STATE $p_1 \leftarrow next(p_1)$
+      \STATE $p_2 \leftarrow next(p_2)$
+      \ELSE\IF{$docID(p_1) < docID(p_2)$}
+      	\STATE $p_1 \leftarrow next(p_1)$
+      	\ELSE
+		\STATE $p_2 \leftarrow next(p_2)$
+      \ENDIF
+    \ENDIF
+  \ENDWHILE
+  \STATE Return answer
+\ENDPROCEDURE
+\end{algorithmic}
+\end{algorithm}
+```
+
+<!-- tabs:end -->
+
+### 动态索引问题
+
+- [x] 迄今为止，我们都假设文档集是静态的。但事实上，文档集通常不是静态的：
+  - 文档会不断的加入进来
+  - 文档也会被删除或者修改
+- [x] 这就意味着词典和倒排记录表需要修改：
+  - 对于已在词典中的词项更新倒排记录
+  - 将新的词项加入到词典中
+
+#### 最简单的方法：主从索引
+
+- [x] 维护一个大的主索引
+- [x] 新文档信息存储在一个小的辅助索引中
+- [x] 检索时同时遍历两个索引，并进行合并
+- [x] 如需删除操作，可利用一个新的无效位向量
+  - 返回结果前，利用该向量过滤结果
+- [x] 定期将辅助索引合并到主索引中
+
+##### 主从索引模式存在的问题
+
+- [x] 频繁合并将导致很大的开销。
+- [x] 合并过程效率很低。
+  - 如果每个词项的倒排表单独形成一个文件，查询与合并将会较为简单，但此时压力转嫁到了文件读写上(因为有着过多的文件)。
+
+- [x] 现实中，往往在上述两种极端机制中取一个折中方案
+  - 例如，对非常大的索引记录表进行切分，而对较短的索引记录表进行合并
+  - 或者基于查询词项的常用性进行切分(需要对使用频率进行预判)
+
+#### 主从索引合并
+
+```algorithm
+\begin{algorithm}
+\caption{INDEXMERGE}
+\begin{algorithmic}
+\PROCEDURE{LMERGEADDTOKEN}{$indexes, Z_0, token$}
+  \STATE $Z_0 \leftarrow MERGE(Z_0, \lbrace token \rbrace)$ 
+  \IF{$|Z_0| = n$}
+     \FOR{$i \leftarrow 0 \ To\ \infty$} 
+      \IF{$I_i \in indexes$} 
+          \STATE $Z_{i+1} \leftarrow MERGE(I_i, Z_i)$ // $\color{red}{I_i已存在}$ 
+          \STATE ($Z_{i+1}$ is a temporary index on disk.)
+          \STATE ($indexes \leftarrow indexes - \lbrace I_i \rbrace$)
+      \ELSE
+      	  \STATE $I_i \leftarrow Z_i$ ($Z_i$ becomes the permanent index $I_i$)
+          \STATE $indexes \leftarrow indexes \bigcup \lbrace I_i \rbrace$
+          \STATE \BREAK
+      \ENDIF
+      \STATE $Z_0 \leftarrow 0$
+      \ENDFOR
+    \ENDIF
+\ENDPROCEDURE
+\PROCEDURE{LOGARITHMICMERGE}{}
+  \STATE $Z_0 \leftarrow \varnothing$ ($Z_0$ is the in-memory index.)
+  \STATE $indexes \leftarrow \varnothing$
+  \WHILE{true}
+    \STATE LMERGEADDTOKEN($indexes, Z_0, GETNEXTTOKEN()$)
+  \ENDWHILE
+\ENDPROCEDURE
+\end{algorithmic}
+\end{algorithm}
+```
+
+### 倒排索引的优化问题
+
+- [x] 对于含有NOT操作的布尔查询，是否仍然能在 $O(x+y)$ 的时间内完成？
+  - 例如，Brutus AND NOT Caesar，如何处理？
+- [x] 进而，对于任意组合(例如，包含括号)的布尔查询，如何处理？
+  - 例如，(Brutus OR Caesar) AND NOT (Antony OR Cleopatra)
+  - 如何能够缩短查询的总时间开支？
+- [x] <span style="color:blue;">核心问题：如何提升倒排索引的效率？</span>
+- [x] 处理查询的最佳顺序是什么？
+  - 对于使用AND连接的查询，其本质是倒排表的合并操作
+
+<p align="center">
+  <img src="./img/倒排索引的优化问题.png" alt="倒排索引的优化问题">
+</p>
+
+- [x] 按照文档频率的顺序进行处理
+  - 先处理文档频率小的，再处理大的
+  - 在上例中，我们采用(Calpurnia AND Brutus) AND Caesar的顺序处理
+- [x] 更一般的优化问题：任意组合的布尔查询
+  - 例如：(Brutus OR Caesar) AND (Antony OR Cleopatra)
+  - 同样，按照文档频率的顺序进行处理
+    - 首先，获得所有词项的文档频率
+    - 其次，保守地估计出每个OR操作后的结果大小
+      - 考虑 $x+y$ 的最坏情况
+    - 最后，按照结果从小到大的顺序执行AND
+
+### 倒排表合并中的优化问题
+
+- [x] 更进一步：倒排表的合并需要O(x+y)次，能否做得更好？
+
+<p align="center">
+  <img src="./img/倒排表合并中的优化问题.png" alt="倒排表合并中的优化问题">
+</p>
+
+- [x] 通过设置跳表指针跳过部分文档，从而实现快速合并
+  - 如何利用跳表指针实现快速合并？
+  - 在什么位置设置跳表指针？
+
+#### 带有跳表指针的查询处理过程
+
+<p align="center">
+  <img src="./img/倒排表合并中的优化问题1.png" alt="倒排表合并中的优化问题">
+</p>
+
+- [x] 首先，通过遍历发现了共同的记录8，继续移动指针
+- [x] 其次，表2在11的位置，我们发现跳表指针31小于表1的下一个数41
+- [x] 因此，我们直接将表2跳到31，而跳过其中的17、21两个数
+
+#### 以何种策略设置跳表指针？
+
+- [x] 设置较多的指针+较短的步长→更多的跳跃机会。
+  - 相应的，需要耗费更多的存储空间
+- [x] 设置较少的指针+较长的步长→更少的指针比较次数
+  - 存储空间消耗更少，但跳跃机会也更少
+
+<p align="center">
+  <img src="./img/倒排表合并中的优化问题2.png" alt="倒排表合并中的优化问题">
+</p>
+
+#### 一个简单的启发式策略
+
+- [x] 如果倒排表长度为 $L$ ，则间隔 $\sqrt{L}$ 均匀放置跳表指针
+  - 该策略没有考虑查询词项的分布，未必导致结果优化。
+  - 同时，索引的动态变化也会影响跳表指针的设置
+    - 如果索引相对固定，建立有效的跳表指针就相对容易
+    - 反之，经常更新的索引很难建立合适的跳表指针
+
+<p align="center">
+  <img src="./img/倒排表合并中的优化问题1.png" alt="倒排表合并中的优化问题">
+</p>
+
+#### 进阶：多层跳表指针
+
+- [x] 多层跳表指针的推进与单层类似，但高层节点还会多一个Down指针(指向下一层)
+  - 如果当前处在第 $K$ 层，发现对应数值 $y$ 处在当前节点 $x_t$ 和下一节点 $x_{t+1}$ 之间，则进入下一层(即 $K-1$ 层)进行更细粒度的比对
+  - <span style="color:blue">该过程与二分查找类似！</span>
+
+<p align="center">
+  <img src="./img/倒排表合并中的优化问题3.png" alt="倒排表合并中的优化问题">
+</p>
+
+### 短语查询的需求
+
+- [x] 用户希望将类似“stanford university”的查询中的两个词看成是一个整体
+  - 类似“I want to university at stanford ”这样的文档是不能够满足用户需求的。
+  - 大部分的搜索引擎都支持双引号的短语查询，这种语法很容易理解并使用。然而，有很多查询在输入时没有加双引号，其实都是隐式的短语查询
+
+<!-- tabs:start -->
+
+#### **第一种解决方案：二元词索引**
+
+- [x] 将文档中每个连续词对看成一个短语
+  - 例如，文本“Friends, Romans, Countrymen”将生成如下的二元连续词对：
+    - Friend Roman
+    - Roman Countrymen
+  - 以上的每一个二元词对都将作为词典中的词项。
+- [x] 经过上述的处理，可以构建面向二元词的倒排表，并处理两个词(或多个词)构成的短语查询。
+- [x] 更长的短语查询：可以分成多个短查询来处理
+  - 例如，文本“stanford university palo alto”
+    - 将分解成如下的二元词对布尔查询：
+      > - stanford university AND university palo AND palo alto
+    - 或采用更长的多元词索引加以解决
+  - 如果采用二元词索引拼接的方式，对于该布尔查询返回的文档，我们 `不能确定` 其中是否真正包含最原始的四词短语
+
+#### **第二种解决方案：位置信息索引**
+
+- [x] 二元词(或多元词)索引最大的问题：词汇表迅速增长
+- [x] 在记录词项的同时，记录它们在文档中出现的位置，可以达成更广泛的查询
+  - 在这种索引中，对每个词项，采用以下方式存储其倒排表记录：
+
+<p align="center">
+  <img src="./img/位置信息索引.png" alt="位置信息索引">
+</p>
+
+- [x] 位置信息检索实例
+  - 对于短语查询，仍采用合并算法(AND)，查找符合的文档。
+  - 不只是简单地判断两个词是否出现在同一文档中，还需要检查他们出现的位置情况是否符合要求。
+
+<p align="center">
+  <img src="./img/位置信息索引1.png" alt="位置信息索引">
+</p>
+
+- [x] 更为重要的是，位置信息索引能够用于邻近搜索(例如，间隔 $k$ 个词)
+
+<p align="center">
+  <img src="./img/位置信息索引2.png" alt="位置信息索引">
+</p>
+
+<!-- tabs:end -->
+
+### 倒排表的扩展性问题
+
+- [x] 除了文档ID和位置，搜索引擎往往在倒排表中加入更多元素
+  - 例如： <strong style="color:blue">词项频率(Term Frequency)</strong>、词项类型等
+- [x] 同时，除了基本的词查询之外，倒排表还可能面临更多需求
+  - 文档范围：例如文档来源，site:www.ustc.edu.cn
+  - 文档类型：例如搜索引擎常用的filetype:PDF
+  - 文档属性：作者是“D.Manning”的文档
+
+<p align="center">
+  <img src="./img/倒排表的扩展性问题.png" alt="倒排表的扩展性问题">
+</p>
+
+- [x] 实例
+
+<p align="center">
+  <img src="./img/倒排表的扩展性问题1.png" alt="倒排表的扩展性问题">
+</p>
+
+## 索引存储
+
+### 倒排索引的存储问题
+
+- [x] 一种常用方式：词典与倒排表一起存储
+  - 便于同时读取 ，但文档规模大时将导致索引过大，影响性能
+- [x] 另一种常用方式：两者分开存储
+  - 词典与倒排表分别存储为不同的文件，通过页指针关联
+    - 倒排表文件也可采用分布存储的方式
+  - 优点：性能大幅提升
+    - 词典可以常驻内存，至少常驻一部分(例如主索引)
+    - 可以支持并行、分布式查询
+
+### 常见的词汇表存储结构
+
+<p align="center">
+  <img src="./img/常见的词汇表存储结构.png" alt="常见的词汇表存储结构">
+</p>
+
+<!-- tabs:start -->
+
+#### **顺序存储**
+
+- [x] 词汇表的顺序排列方式
+  - 把词汇表按照字典顺序进行排列(查询的前提)
+  - 词汇表的查找采用二分查找法
+- [x] 优点：简单粗暴
+- [x] 缺点：效率一般
+  - 索引构建的效率一般(文档插入需要反复调用查找和排序)
+  - 索引检索的效率也一般
+    - 二分查找复杂度为 $O(logN)$ ，与词汇数量 $N$ 有关(通常海量词汇)
+
+#### **哈希存储**
+
+- [x] 对词汇表进行哈希
+  - 根据给定的词项，散列成一个整数
+  - 用该整数作为词项的访问地址
+- [x] 优点：实现简单、检索速度快，理论时间 $O(1)$
+- [x] 缺点：
+  - 当冲突过多时效率会下降
+    - 例如，对姓名使用简称进行哈希，则 $姚明 ≈ 杨幂 = YM$
+  - 想要避免冲突，哈希值的取值空间就会带来巨大的存储压力
+  - 关键在于找到一个好的散列函数
+
+<p align="center">
+  <img src="./img/哈希存储.png" alt="哈希存储">
+</p>
+
+#### **B/B+树**
+
+- [x] 对词汇表进行B/B+树存储
+  - 多叉平衡有序树
+- [x] 优点：
+  - 性能好且稳定，查找次数 = 层数
+- [x] 缺点：
+  - 维护代价较高
+  - 实现相对复杂
+
+<p align="center">
+  <img src="./img/B+树.png" alt="B+树">
+</p>
+
+#### **Trie树**
+
+- [x] Trie树，又称前缀树，利用字符串的公共前缀来节约存储空间
+  - Trie树是一种用于快速检索的多叉树结构
+  - Trie树把要查找的关键词看作一个字符序列
+  - 根节点不包含字符，除根节点外每一个节点都只包含一个字符
+  - 从根节点到某一节点，经过的字符连接起来即为该节点对应的字符串
+  - 每个节点的所有子节点包含的字符都不相同
+- [x] 查找时间只与词的长度有关，而与词典中词的个数无关。
+  - 当词表较大时，才能体现出速度的优势
+- [x] 例如，以下Trie树对应词典单词：
+  - t、a 、i 、to 、te 、in 、tea 、ted、ten、inn
+
+<p align="center">
+  <img src="./img/Trie树.png" alt="Trie树">
+</p>
+
+- [x] Trie树的优缺点：
+  - 优点：效率高
+    - 查找效率高，与词表长度无关
+    - 索引的插入，合并速度快
+  - 缺点：所需空间较大，本质是“以空间换时间”
+    - 如果是完全m叉树，节点数指数级增长
+    - Trie树虽然不是完全m叉树，但所需空间仍然很大，尤其当词项公共前缀较少时
+
+<!-- tabs:end -->
+
+## 索引压缩
+
+### 索引压缩的意义
+
+- [x] 为什么要压缩索引？
+  - 节省磁盘空间(￥)，提高效率(内存利用率或数据传输速度)
+  - 前提：快速的解压缩算法。目前的启发式算法效率都比较高。
+- [x] 对于词典而言，压缩的意义：
+  - 压缩得足够小，可以直接放入内存中，提升效率
+- [x] 对于倒排记录表而言，压缩的意义：
+  - 减少所需的磁盘空间，可以更多移入内存
+  - 减少从磁盘读取倒排表所需的时间
+
+### 两种索引压缩策略
+
+- [x] 从词典和倒排表两个维度入手，实现索引的压缩。
+  - 以Reuters-RCV1语料库为例，比较不同压缩手段下的空间需求变化。
+
+<p align="center">
+  <img src="./img/两种索引压缩策略.png" alt="两种索引压缩策略">
+</p>
+
+<!-- tabs:start -->
+
+#### **词典维度**
+
+<!-- tabs:start -->
+
+##### **词典的基本存储方式：定长存储**
+
+- [x] 在词项总数为400K的情况下，考虑每个词项占28字节，一共需要11.2MB
+  - 词项本身设置定长为20字节，另外需要记录文档频率和指向倒排表。
+
+<p align="center">
+  <img src="./img/定长存储.png" alt="定长存储">
+</p>
+
+- [x] 定长存储将造成空间浪费
+  - 为每次词项设置定长为20字节，将导致极大的空间浪费
+    - 书面英文中单词的平均长度为4.5个字符
+    - 英文中平均的词典词项长度为8个字符
+      - 部分短字符作为停用词被删去
+      - 即使如此，仍然会造成12个字节的空间浪费(采用ASCII编码)
+    - 糟糕的是，即使做出这样的让步，仍然有些超级长词无法被存储
+      - E.g., Supercalifragilisticexpialidocious(奇妙的，难以置信的)
+
+##### **压缩词项列表：将词典视作单一字符串**
+
+- [x] Dictionary-as-a-String，词项之间用指针分割
+  - 指向下一个词项的指针同时也标识着当前词项的结束
+  - 期望节省60%的词典空间：(20-8)/20×100% = 60%
+
+<p align="center">
+  <img src="./img/将词典视作单一字符串.png" alt="将词典视作单一字符串">
+</p>
+
+- [x] 字符串词典的空间大小
+  - 每个词项平均总计占用19个字节，而不是原先的28个字节
+  - 首先，在词项字符串中，每个词项平均长度8个字节
+  - 其次，词项文档频率与倒排表指针各4字节不变
+    - 最后，词项指针约3字节
+  - 字符总长度约为 $400K×8=3.2M$ ，用大约 $22bit≈3B$ 长度可以标记
+  - $8+4+4+3=19$ ， $400K$ 词项一共仅需 $7.6MB$ (定长存储时为 $11.2MB$ )
+
+##### **进一步压缩：按块存储(Blocking)**
+
+- [x] 单一字符串在词项指针上需要占用较多额外空间
+- [x] 通过为每 $k$ 个词项存储一个指针，来减少指针的总数量
+  - 需要 <strong style="color:blue;">额外1个字节</strong> 用于表示词项长度。
+  - 例如，下图中的例子为 $k=4$
+
+<p align="center">
+  <img src="./img/按块存储.png" alt="按块存储">
+</p>
+
+- [x] 按块存储通过牺牲少量存储词项长度，可以节省更多的指针开支
+- [x] 例如，当块的大小k=4时
+  - 不采用按块存储时，每个指针花费 $3$ 字节，共需 $12$ 字节
+  - 采用按块存储时，只需要花费 $3+4×1=7$ 字节
+- [x] 由此，原先的存储空间可以进一步降低到 $7.1MB$
+- [x] 讨论： $k$ 增大时，开支进一步降低，为什么不选取更大的 $k$ ？
+
+##### **按块存储在搜索上的问题**
+
+- 未压缩词典的搜索，标准二分法
+    - 假设词典中每个词项被查询的概率相同(实际上并非如此)
+    - 则平均比较次数为：
+      - $(1+2×2+4×3+4)/8=2.625次$
+
+<p align="center">
+  <img src="./img/按块存储1.png" alt="按块存储">
+</p>
+
+- [x] 采用按块存储后，二分查找只能在块外进行
+  - 块内采用线性查找方式。
+- [x] 当块的大小 $k=4$ ，平均比较次数为： $(1+2×2+2×3+2×4+5)/8 = 3步$
+  - 显然，随着 $k$ 上升，线性查找部分增多，效率更低
+
+##### **另一种改进：前端编码(Front Coding)**
+
+- [x] 按照词典顺序排列的连续词项之间，往往具有公共的前缀
+  - 使用特殊字符表示前缀使用，如下图的◊
+  - 对于RCV1语料库而言，前端编码可以将按块存储所需的 $7.1MB$ 降至 $5.9MB$
+
+<p align="center">
+  <img src="./img/前端编码.png" alt="前端编码">
+</p>
+
+<!-- tabs:end -->
+
+#### **倒排表维度**
+
+<!-- tabs:start -->
+
+##### **倒排表存储的问题所在**
+
+- [x] 倒排表所需的空间远远大于词典本身
+- [x] 最迫切的需求在于如何紧密地存储每一个倒排表，尤其是文档ID
+  - 如果使用4字节整数来表示文档ID，每个文档ID需要 $32bit$ 
+  - 对于RCV1语料库而言， $800K$ 文档意味着至少需要 $log_2800000≈20bits$
+  - 如何用远小于 $20bit$ 来表示每个文档ID？
+
+<p align="center">
+  <img src="./img/倒排表存储的问题所在.png" alt="倒排表存储的问题所在">
+</p>
+
+##### **线索：文档集中词项的分布情况——Zipf定律**
+
+- [x] 只有很少一些非常高频的词项，其它绝大部分都是很生僻的词项。
+- [x] <span style="color:red;">Zipf 定律</span> ：排名第 $\color{blue}{i}$ 多的词项的文档集频率与 $\color{blue}{\frac{1}{i}}$ 成正比
+  - 另一种表述方式：任意一个词项 ，其频度(Frequency)的排名(Rank)和频度的乘积大致是一个常数
+  - $Cf_i × i ≈ K$ ， $Cf_i$ 为文档集频率(排名第 $i$ 的)， $K$ 为归一化常数
+
+<!-- chat:start -->
+
+#### **Tips**
+
+Zipf 定律是 Zipf 在 1949 年的一本关于人类定位的最小作用原理的书中首先提出的，其中最令人难忘的例子是在人类语言中，如果以单词出现的频次将所有单词排序，用横坐标表示序号，纵坐标表示对应的频次，可以得到一条幂函数曲线。这
+个定律被发现适用于大量复杂系统。
+
+<!-- chat:end -->
+
+##### **倒排表存储的两种相反需求**
+
+- [x] 词项的频率巨大差异，决定了对于倒排表存储的不同需求
+  - hydrochlorofluorocarbons这种词项可能成百上千万个文档中才出现一次
+    - 采用 $log_2800000≈20 bits$ 来记录这一倒排记录，可以满足需求
+  - The这种词项(如果没有作为停用词删除)可能每个文档都会出现
+    - 类似这种情况，采用 $20bits$ 记录太浪费了
+    - 1bit的提示符(e.g., 0/1——某篇文档有或没有)即可满足
+
+##### **规律观察：采用间距代替文档ID**
+
+- [x] 一个基本的道理：间距的数值必然小于文档ID的数值
+  - 例如，词项Computer在倒排表中的记录为：33,47,154,159,202…
+  - 如果采用间距存储，该表可改为：33,14,107,5,43…
+- [x] 期望：绝大多数间距存储空间都远小于20bits
+
+<p align="center">
+  <img src="./img/采用间距代替文档ID.png" alt="采用间距代替文档ID">
+</p>
+
+##### **再进一步：可变长度编码**
+
+- [x] 我们的需求：对于一个间距值 $G$ ，想用最少的所需字节来表示它
+- [x] 关键问题：需要利用整数个字节来对每个间距编码
+  - <strong style="color:red;">这需要一个可变长度编码，对小数字使用短码来实现这一点</strong>
+- [x] 可变长度编码的基本流程大致如下：
+  - 先存储 $G$ ，并分配 $1bit$ 作为延续位
+  - 如果 $G<128$ ，则采用 `第一位延续位为1` + `7位有效二进制编码` 的格式
+  - 如果 $G>=128$ ，则先对低阶的7位编码，然后采取相同算法对高阶位进行编码。最后一个字节( $8bit$ )的延续位为 $1$ ，其他字节延续位为 $0$ .
+
+##### **可变长度编码的实例**
+
+- [x] 例如，5的二进制为101，加上延续位为10000101.
+- [x] 214577的二进制为1101/0001100/0110001，因此拆分为3个字节。
+- [x] 相比于4字节整数，可变字节码在小数字上的短码可以节省更多空间。
+
+<p align="center">
+  <img src="./img/可变长度编码的实例.png" alt="可变长度编码的实例">
+</p>
+
+<!-- tabs:end -->
+
+<!-- tabs:end -->
